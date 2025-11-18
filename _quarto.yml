@@ -1,27 +1,19 @@
 project:
   type: website
   output-dir: docs
-  
 
 website:
-  title: "Dashboards"
+  title: "final_dashboard"
   navbar:
     left:
       - href: index.qmd
-        text: Starwars
-      - penguins.qmd
-      - icon: github
-        href: https://github.com/reimn11
-        target: blank
-      - icon: house
-        href: https://reimn11.github.io
-        target: blank
-      
+        text: Home
+      - about.qmd
 
 format:
   html:
     theme:
-      - solar
+      - cosmo
       - brand
     css: styles.css
     toc: true
