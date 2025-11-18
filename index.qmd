@@ -1,11 +1,26 @@
 ---
-title: "final_dashboard "
+title: "final_dashboard"
+author: "Rei Miyashiro"
+format: 
+  dashboard:
+    orientation: rows
 ---
 
-This is a Quarto website.
+```{r}
+library(tidyverse)
+library(readr)
+library(plotly)
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+sleep <- read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
+```
+
+# Page 1
+
+##  Row 1
 
 ```{r}
-1 + 1
+sleep |>
+  ggplot(aes(x = `Sleep Duration`)) +
+  geom_histogram(bins = 20) +
+  theme_minimal()
 ```
