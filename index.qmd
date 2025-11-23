@@ -10,17 +10,117 @@ format:
 library(tidyverse)
 library(readr)
 library(plotly)
+library(scales)
 
 sleep <- read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
 ```
 
 # Page 1
 
-##  Row 1
+## Row 1
 
 ```{r}
-sleep |>
-  ggplot(aes(x = `Sleep Duration`)) +
-  geom_histogram(bins = 20) +
+# Make a long version with both sleep measures AND Sleep Disorder
+sleep_long <- sleep |>
+  select(`Stress Level`, `Sleep Duration`, `Quality of Sleep`, `Sleep Disorder`) |>
+  pivot_longer(
+    cols = c(`Sleep Duration`, `Quality of Sleep`),
+    names_to = "sleep_measure",
+    values_to = "value"
+  )
+
+sleep_long |>
+  ggplot(aes(x = `Stress Level`,
+             y = value,
+             color = `Sleep Disorder`)) +  # map color to the column
+  geom_jitter(width = 0.1, alpha = 0.5) +
+  geom_smooth(method = 'lm', se = FALSE) +
+  facet_wrap(~ sleep_measure, scales = "free_y") +
+  labs(
+    title = "Stress level vs sleep duration and quality, colored by sleep disorder",
+    x = "Stress level (higher = more stress)",
+    y = "Value",
+    color = "Sleep disorder"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+
+# 1. Count BMI categories within each sleep disorder
+bmi_sleep_counts <- sleep |>
+  count(`Sleep Disorder`, `BMI Category`) |>
+  group_by(`Sleep Disorder`) |>
+  mutate(
+    prop  = n / sum(n),
+    label = percent(prop, accuracy = 0.1)
+  )
+# 2. Pie charts: one per sleep disorder
+bmi_sleep_counts |>
+  ggplot(aes(x = "", y = prop, fill = `BMI Category`)) +
+  geom_col(color = "white", width = 1) +      # stacked bar
+  coord_polar(theta = "y") +                  # turn bar into pie
+  facet_wrap(~ `Sleep Disorder`) +            # one pie per disorder
+  labs(
+    title = "BMI Category distribution within each sleep disorder",
+    x = NULL,
+    y = NULL,
+    fill = "BMI Category"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank()
+  )
+
+```
+
+## Row 2
+
+```{r}
+# Split Blood Pressure into numeric columns
+sleep_bp <- sleep |>
+  separate(
+    `Blood Pressure`,
+    into = c("Systolic", "Diastolic"),
+    sep = "/",
+    convert = TRUE   # makes them numeric
+  )
+
+sleep_bp |>
+  ggplot(aes(x = Systolic,
+             y = `Sleep Duration`,
+             color = `BMI Category`)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = 'lm',se = FALSE) +
+  labs(
+    title = "Sleep Duration vs. Systoric blood pressure by BMI category",
+    x = "Systoric blood pressure",
+    y = "SLEEP DURATION",
+    color = "BMI Category"
+  ) +
+  theme_minimal()
+
+```
+
+```{r}
+sleep_bp |>
+  ggplot(aes(x = Diastolic,
+             y = `Sleep Duration`,
+             color = `BMI Category`)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = 'lm',se = FALSE) +
+  labs(
+    title = "Sleep Duration vs. Diastolic blood pressure by BMI category",
+    x = "Diastolic blood pressure",
+    y = "SLEEP DURATION",
+    color = "BMI Category"
+  ) +
   theme_minimal()
 ```
+
+![]()
+
+# Page 2
