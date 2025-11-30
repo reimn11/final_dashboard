@@ -1,6 +1,4 @@
 ---
-title: "final_dashboard"
-author: "Rei Miyashiro"
 format: 
   dashboard:
     orientation: rows
@@ -26,8 +24,8 @@ sleep <- read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
 ```{r}
 
 sleep_long <- sleep %>%
-  dplyr::select(`Stress Level`, `Sleep Duration`, `Quality of Sleep`, `Sleep Disorder`) %>%
-  tidyr::pivot_longer(
+  select(`Stress Level`, `Sleep Duration`, `Quality of Sleep`, `Sleep Disorder`) %>%
+  pivot_longer(
     cols = c(`Sleep Duration`, `Quality of Sleep`),
     names_to  = "sleep_measure",
     values_to = "value"
@@ -41,6 +39,13 @@ p_stress_sleep <- sleep_long %>%
   geom_jitter(width = 0.1, alpha = 0.5) +
   geom_smooth(method = "lm", se = FALSE) +
   facet_wrap(~ sleep_measure, scales = "free_y") +
+  scale_color_manual(
+    values = c(
+      "Sleep Apnea" = "purple4",  
+      "Insomnia"    = "firebrick4",  
+      "None"        = "palegreen2"   
+    )
+  ) +
   labs(
     title  = "Stress level vs sleep duration and quality, colored by sleep disorder",
     x      = "Stress level (higher = more stress)",
@@ -55,6 +60,7 @@ ggplotly(p_stress_sleep)
 ```
 
 ```{r}
+library(scales)
 # Clean BMI Category labels in the original data
 sleep_clean <- sleep %>%
   mutate(
@@ -79,6 +85,13 @@ bmi_sleep_counts %>%
   geom_col(color = "white", width = 1) +
   coord_polar(theta = "y") +
   facet_wrap(~ `Sleep Disorder`) +
+  scale_fill_manual(
+    values = c(
+      "Obese" = "lightsalmon",  
+      "Overweight"    = "firebrick1",  
+      "Normal"        = "palegreen2"   
+    )
+  ) +
   labs(
     title = "BMI Category distribution within each sleep disorder",
     x = NULL,
@@ -91,67 +104,24 @@ bmi_sleep_counts %>%
     axis.ticks = element_blank(),
     panel.grid = element_blank()
   )
-
 ```
 
 ## Row 2
 
 ```{r}
-sleep_bp <- sleep %>%
-  # combine Normal + Normal Weight
-  mutate(
-    `BMI Category` = recode(
-      `BMI Category`,
-      "Normal Weight" = "Normal"
-    )
-  ) %>%
-  # first split blood pressure
-  separate(
-    `Blood Pressure`,
-    into = c("Systolic", "Diastolic"),
-    sep = "/",
-    convert = TRUE
-  ) %>%
-  # then keep only the columns you need
-  select(`Stress Level`,
-         `Sleep Duration`,
-         `Quality of Sleep`,
-         `Sleep Disorder`,
-         `BMI Category`,
-         `Physical Activity Level`,
-         Systolic,
-         Diastolic) %>%
-  pivot_longer(
-    cols = c(`Sleep Duration`, `Quality of Sleep`),
-    names_to  = "sleep_measure",
-    values_to = "value"
-  )
-
-sleep_bp %>%
-  ggplot(aes(x = Systolic,
-             y = value,
-             color = `BMI Category`)) +
-  geom_point(alpha = 0.3) +
-  geom_smooth(method = "loess", se = FALSE) +
-  facet_wrap(~ sleep_measure, scales = "free_y") +
-  labs(
-    title = "Sleep duration and quality vs systolic blood pressure by BMI category",
-    x = "Systolic blood pressure",
-    y = "Sleep value",
-    color = "BMI Category"
-  ) +
-  theme_minimal()
-
-```
-
-```{r}
 ### Sleep Disorder, Stress ###
-
-sleep %>% 
+sleep_clean %>% 
   ggplot(aes(x = `BMI Category`,
              y = `Stress Level`,
              fill = `BMI Category`)) +
   geom_violin() +
+  scale_fill_manual(
+    values = c(
+      "Obese" = "lightsalmon",  
+      "Overweight"    = "firebrick1",  
+      "Normal"        = "palegreen2"   
+    )
+  ) +
   labs(
     title = "Stress level across BMI categories",
     x = "BMI Category",
@@ -177,8 +147,8 @@ sleep_pa_long <- sleep %>%
 
 sleep_pa_long %>% 
   ggplot(aes(x = `Physical Activity Level`, y = value)) +
-  geom_jitter(width = 0.1, alpha = 0.5, color = "steelblue") +
-  geom_smooth(method = "lm", se = FALSE, color = "darkred") +
+  geom_jitter(width = 0.1, alpha = 0.5, color = "gold2") +
+  geom_smooth(method = "lm", se = FALSE, color = "azure4") +
   facet_wrap(~ sleep_measure, scales = "free_y") +
   labs(
     title = "Relationship between Pysical Activity level and sleep duration/quality",
@@ -193,12 +163,19 @@ sleep_pa_long %>%
 ```{r}
 ### Physical activity good for BMI? ###
 
-sleep  %>% 
+sleep_clean  %>% 
   ggplot(aes(x = `BMI Category`,
              y = `Physical Activity Level`,
              fill = `BMI Category`)) +
-  geom_violin(alpha = 0.6, color = NA) +
+  geom_violin(color = NA) +
   geom_boxplot(width = 0.15, outlier.alpha = 0, fill = "white") +
+  scale_fill_manual(
+    values = c(
+      "Obese" = "lightsalmon",  
+      "Overweight"    = "firebrick1",  
+      "Normal"        = "palegreen2"   
+    )
+  ) +
   labs(
     title = "Physical activity level by BMI category",
     x = "BMI Category",
@@ -214,12 +191,19 @@ sleep  %>%
 ```{r}
 ### Stress, BMI ###
 
-sleep_bp %>% 
+sleep_clean %>% 
   ggplot(aes(x = `Physical Activity Level`,
              y = `Stress Level`,
              color = `BMI Category`)) +
   geom_point(alpha = 0.3) +
   geom_smooth(method = 'loess',se = FALSE) +
+  scale_color_manual(
+    values = c(
+      "Obese" = "lightsalmon",  
+      "Overweight"    = "firebrick1",  
+      "Normal"        = "palegreen2"  
+    )
+  ) +
   labs(
     title = "Sleep Duration vs. Stress Level by BMI category",
     x = "Pysical Activity",

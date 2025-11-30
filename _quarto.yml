@@ -3,20 +3,22 @@ project:
   output-dir: docs
 
 website:
-  title: "final_dashboard"
+  title: "How Stress, BMI, and Lifestyle Shape Sleep Health"
   navbar:
     left:
       - href: index.qmd
         text: Home
-      - about.qmd
-
+      - text: "My website"
+        href: https://reimn11.github.io
+        target: _blank
 format:
   html:
-    theme:
-      - cosmo
-      - brand
+    theme: 
+      light: mintty
+      dark: superhero
     css: styles.css
     toc: true
 
 editor: visual
+
 
