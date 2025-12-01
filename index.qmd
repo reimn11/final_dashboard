@@ -12,23 +12,34 @@ library(scales)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
-library(plotly)
+
 
 sleep <- read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
 ```
 
 # Page 1
 
+**Data source:** *Sleep Health and Lifestyle Dataset* (synthetic data), created by the author of the Kaggle dataset and made available on Kaggle:\
+<https://www.kaggle.com/datasets/uom190346a/sleep-health-and-lifestyle-dataset>.
+
 ## Row 1
 
 ```{r}
-
 sleep_long <- sleep %>%
   select(`Stress Level`, `Sleep Duration`, `Quality of Sleep`, `Sleep Disorder`) %>%
   pivot_longer(
     cols = c(`Sleep Duration`, `Quality of Sleep`),
     names_to  = "sleep_measure",
     values_to = "value"
+  )
+
+# Compute the correlation AND label positions per sleep_measure
+cor_sleep <- sleep_long %>%
+  group_by(sleep_measure) %>%
+  summarise(
+    correlation = cor(`Stress Level`, value, use = "complete.obs"),
+    x = max(`Stress Level`, na.rm = TRUE) - 0.5, 
+    y = max(value, na.rm = TRUE) - 0.1,         
   )
 
 # Build the ggplot
@@ -46,6 +57,13 @@ p_stress_sleep <- sleep_long %>%
       "None"        = "palegreen2"   
     )
   ) +
+  # add r labels
+  geom_text(
+    data = cor_sleep,
+    inherit.aes = FALSE,
+    aes(x = x, y = y, label = paste0("r = ", round(correlation, 2))),
+    size  = 4) +
+  
   labs(
     title  = "Stress level vs sleep duration and quality, colored by sleep disorder",
     x      = "Stress level (higher = more stress)",
@@ -145,14 +163,31 @@ sleep_pa_long <- sleep %>%
     values_to = "value"
   )
 
+# Correlation between Physical Activity and each sleep measure
+cor_pa_sleep <- sleep_pa_long %>%
+  group_by(sleep_measure) %>%
+  summarise(
+    correlation = cor(`Physical Activity Level`, value, use = "complete.obs"),
+    x = max(`Physical Activity Level`, na.rm = TRUE) - 3,  
+    y = max(value, na.rm = TRUE) + 1,                   
+  )
+
 sleep_pa_long %>% 
   ggplot(aes(x = `Physical Activity Level`, y = value)) +
   geom_jitter(width = 0.1, alpha = 0.5, color = "gold2") +
   geom_smooth(method = "lm", se = FALSE, color = "azure4") +
   facet_wrap(~ sleep_measure, scales = "free_y") +
+  # add correlation text
+  geom_text(
+    data = cor_pa_sleep,
+    inherit.aes = FALSE,
+    aes(x = x, y = y,
+      label = paste0("r = ", round(correlation, 2))),
+    size  = 4
+  ) +
   labs(
-    title = "Relationship between Pysical Activity level and sleep duration/quality",
-    x = "Physical Activity Level",
+    title = "Relationship between Physical Activity level and sleep duration/quality",
+    x = "Physical Activity Level (min)",
     y = "Value"
   ) +
   theme_minimal()
@@ -179,7 +214,7 @@ sleep_clean  %>%
   labs(
     title = "Physical activity level by BMI category",
     x = "BMI Category",
-    y = "Physical Activity Level"
+    y = "Physical Activity Level (min)"
   ) +
   theme_minimal() +
   theme(legend.position = "none")
@@ -206,7 +241,7 @@ sleep_clean %>%
   ) +
   labs(
     title = "Sleep Duration vs. Stress Level by BMI category",
-    x = "Pysical Activity",
+    x = "Pysical Activity (min)",
     y = "Stress",
     color = "BMI Category"
   ) +
