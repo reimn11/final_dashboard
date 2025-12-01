@@ -19,7 +19,7 @@ sleep <- read_csv("data/Sleep_health_and_lifestyle_dataset.csv")
 
 # Page 1
 
-**Data source:** *Sleep Health and Lifestyle Dataset* (synthetic data), created by the author of the Kaggle dataset and made available on Kaggle:\
+**Data source:** *Sleep Health and Lifestyle Dataset*, created by the author of the Kaggle dataset and made available on Kaggle:\
 <https://www.kaggle.com/datasets/uom190346a/sleep-health-and-lifestyle-dataset>.
 
 ## Row 1
